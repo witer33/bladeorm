@@ -37,6 +37,9 @@ class ModelExecutor(QueryExecutor):
     def __call__(self, *args, **kwargs):
         return self.filter(*args, **kwargs)
 
+    def __await__(self):
+        return self.fetchone().__await__()
+
     async def fetch(
         self, *results: Union[Operator, Any], limit: int = None, offset: int = None
     ) -> List["Model"]:
