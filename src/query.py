@@ -84,7 +84,7 @@ class ModelExecutor(QueryExecutor):
                 f"SET {','.join([f'{key}={value.build(manager) if isinstance(value, Operator) else manager.add(value)}' for key, value in values.items()])} "
                 f"{'WHERE ' + self._where.build(manager) if self._where else ''}"
             )
-            print(query, manager.get_storage())
+
             await connection.execute(query, *manager.get_storage())
 
     async def delete(self):
