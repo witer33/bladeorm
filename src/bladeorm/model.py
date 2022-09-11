@@ -102,7 +102,9 @@ class Model(ModelExecutor):
 
     async def save(self):
         if not self._saved:
-            return await self._original_object.insert(self)
+            result = await self._original_object.insert(self)
+            self._saved = True
+            return result
 
         self._id_check()
 
