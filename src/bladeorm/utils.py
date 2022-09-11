@@ -92,7 +92,7 @@ class Operator:
 
     def __getitem__(self, other):
         self.check_type(other)
-        return Operator(self, "IN", other)
+        return Operator(other, "IN", self)
 
     def __floordiv__(self, other):
         self.check_type(other)

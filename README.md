@@ -66,4 +66,4 @@ await User(User.age + 10 > 20).delete()
 | User.name // "%a%"  | name SIMILAR TO '%a%' |
 | User.name >> "%a%"  | name LIKE '%a%'       |
 | User.name << "%a%"  | name ILIKE '%a%'      |
-| "John"[User.names]  | 'John' IN names       |
+| User.names[“John”]  | 'John' IN names       |
