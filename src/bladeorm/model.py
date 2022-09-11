@@ -12,10 +12,14 @@ if TYPE_CHECKING:
 
 Text = DatabaseType(str, "TEXT")
 Varchar = DatabaseType(str, "VARCHAR")
+SmallInt = DatabaseType(int, "SMALLINT")
 Int = DatabaseType(int, "INTEGER")
+BigInt = DatabaseType(int, "BIGINT")
 Float = DatabaseType(float, "DOUBLE PRECISION")
 Bool = DatabaseType(bool, "BOOLEAN")
+SmallSerial = DatabaseType(int, "SMALLSERIAL", True)
 Serial = DatabaseType(int, "SERIAL", True)
+BigSerial = DatabaseType(int, "BIGSERIAL", True)
 
 
 class Model(ModelExecutor):
