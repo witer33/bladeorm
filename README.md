@@ -1,5 +1,9 @@
 # bladeorm
 A tiny light ORM for PostgreSQL, built for ease of use.
+# Installation
+```bash
+pip3 install bladeorm
+```
 # Example
 ```python3
 from bladeorm.model import Text, Int, Varchar
