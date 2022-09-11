@@ -90,7 +90,7 @@ class Operator:
         self.check_type(other)
         return Operator(self, "ILIKE", other)
 
-    def __index__(self, other):
+    def __getitem__(self, other):
         self.check_type(other)
         return Operator(self, "IN", other)
 
@@ -192,8 +192,10 @@ class DatabaseType(Operator):
     def check_type(self, other):
         if not self._table:
             raise LookupError("Type not initialized")
-        if (not isinstance(other, self._expected_type)) and not (
-            self._expected_type in [int, float] and type(other) in [int, float]
+        if not (
+            isinstance(other, self._expected_type)
+            or isinstance(other, Operator)
+            or (self._expected_type in [int, float] and type(other) in [int, float])
         ):
             raise TypeError(
                 f"Cannot compare {self._expected_type.__name__} with {type(other).__name__}"

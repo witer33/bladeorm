@@ -90,9 +90,11 @@ class Model(ModelExecutor):
 
         self._id_check()
 
-        await self._original_object.filter(
+        result = await self._original_object.filter(
             self._id == self._original_id
         ).delete()
+        self._saved = False
+        return result
 
     async def save(self):
         if not self._saved:
@@ -103,7 +105,13 @@ class Model(ModelExecutor):
         if self._updated_columns:
             result = await self._original_object.filter(
                 self._id == self._original_id
-            ).update(**{k: v for k, v in self._values.items() if self._updated_columns.get(k)})
+            ).update(
+                **{
+                    k: v
+                    for k, v in self._values.items()
+                    if self._updated_columns.get(k)
+                }
+            )
             self._updated_columns = {}
             self._update_original_id()
             return result

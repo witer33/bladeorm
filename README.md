@@ -36,3 +36,34 @@ async def main():
 asyncio.run(main())
 
 ```
+# Documentation
+## Querying
+### Fetch
+```python3
+await User(User.age + 10 > 20).fetch() -> List[User]
+```
+### Fetchone
+```python3
+await User(User.age + 10 > 20).fetchone() -> User
+```
+### Update
+```python3
+await User(User.age + 10 > 20).update(age=User.age - 5.2)
+```
+### Delete
+```python3
+await User(User.age + 10 > 20).delete()
+```
+## Conditions
+| BladeORM            | SQL                   |
+|---------------------|-----------------------|
+| User.name == "John" | name = 'John'         |
+| User.name != "John" | name != 'John'        |
+| User.age > 20       | age > 20              |
+| User.age >= 20      | age >= 20             |
+| User.age < 20       | age < 20              |
+| User.age <= 20      | age <= 20             |
+| User.name // "%a%"  | name SIMILAR TO '%a%' |
+| User.name >> "%a%"  | name LIKE '%a%'       |
+| User.name << "%a%"  | name ILIKE '%a%'      |
+| "John"[User.names]  | 'John' IN names       |
