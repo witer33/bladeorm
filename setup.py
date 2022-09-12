@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="bladeorm",
-    version="0.0.4.3",
+    version="0.0.5",
     license="MIT",
     author="Witer33",
     author_email="dev@witer33.com",
