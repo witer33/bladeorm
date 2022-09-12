@@ -4,6 +4,7 @@ from typing import Dict, Any, Union, TYPE_CHECKING, List
 from dataclasses import dataclass, fields
 from typing import Callable
 import json
+import datetime
 
 if TYPE_CHECKING:
     from .client import Client
@@ -20,6 +21,7 @@ Bool = DatabaseType(bool, "BOOLEAN")
 SmallSerial = DatabaseType(int, "SMALLSERIAL", True)
 Serial = DatabaseType(int, "SERIAL", True)
 BigSerial = DatabaseType(int, "BIGSERIAL", True)
+Date = DatabaseType(datetime.date, "DATE")
 
 
 class Model(ModelExecutor):
@@ -77,13 +79,21 @@ class Model(ModelExecutor):
             raise TypeError(f"{self.__class__.__name__} has no id column")
 
     def create_instance(self, values: Dict[str, Any], saved: bool = False):
+        for key, value in values.items():
+            self._columns[key].check_value(value)
         return self.__class__(self._columns, self._id, self, values, saved)
 
     def __call__(self, *args, **kwargs):
         if len(args) > 0:
             return self.filter(*args, **kwargs)
 
-        return self.create_instance(kwargs)
+        return self.create_instance(
+            {
+                k: v.get_default() if isinstance(v, DatabaseType) else v
+                for k, v in {**self._columns, **kwargs}.items()
+                if (not isinstance(v, DatabaseType)) or v.has_default()
+            }
+        )
 
     async def delete(self):
         if not self._original_object:
@@ -165,11 +175,13 @@ def wrap_model(client: "Client") -> Callable[[Any], Model]:
         """
 
         table_name = f"{model_class.__name__.lower()}s"
-        columns = {}
+        columns: Dict[str, DatabaseType] = {}
 
         for field in fields(dataclass(model_class)):
             if isinstance(field.type, DatabaseType):
-                field.type = field.type.initialize(table_name, field.name)
+                field.type = field.type.initialize(
+                    table_name, field.name, field.default
+                )
                 columns[field.name] = field.type
 
         class ModelWrapper(Model):

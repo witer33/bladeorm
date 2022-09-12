@@ -1,4 +1,4 @@
-from typing import Any, Type, Union, List, Tuple
+from typing import Any, Type, Union, List, Tuple, Callable
 
 
 class ValuesManager:
@@ -128,7 +128,7 @@ class Operator:
 
 class DatabaseType(Operator):
     def __init__(
-        self, expected_type: Type, database_type: str, id_status: bool = False
+        self, expected_type: Type, database_type: str, id_status: bool = False,  check: Callable[[Any], bool] = None
     ):
         super().__init__(self, "", None)
         self._expected_type = expected_type
@@ -137,8 +137,10 @@ class DatabaseType(Operator):
         self.id_status = id_status
         self._table = None
         self._name = None
+        self._default = None
+        self._check = check
 
-    def clone(self):
+    def clone(self) -> "DatabaseType":
         return DatabaseType(self._expected_type, self._database_type, self.id_status)
 
     def __getitem__(self, item) -> "DatabaseType":
@@ -146,21 +148,55 @@ class DatabaseType(Operator):
         new._database_type = f"{self._database_type}[{item}]"
         return new
 
-    def array(self):
+    def check(self, check: Callable[[Any], bool]) -> "DatabaseType":
+        new = self.clone()
+        new._check = check
+        return new
+
+    def check_value(self, value):
+        if self._check and not self._check(value):
+            raise ValueError(f"Value {value} is not valid for {self._name}")
+
+    @property
+    def array(self) -> "DatabaseType":
         new = self.clone()
         new._database_type = f"{self._database_type}[]"
         return new
 
-    def __call__(self, size: int):
+    @property
+    def unique(self) -> "DatabaseType":
+        new = self.clone()
+        new._database_type = f"{self._database_type} UNIQUE"
+        return new
+
+    @property
+    def not_null(self) -> "DatabaseType":
+        new = self.clone()
+        new._database_type = f"{self._database_type} NOT NULL"
+        return new
+
+    def default(self, value: Any) -> "DatabaseType":
+        new = self.clone()
+        new._database_type = f"{self._database_type} DEFAULT {value}"
+        return new
+
+    def custom(self, custom: Callable[[str], str]) -> "DatabaseType":
+        new = self.clone()
+        new._database_type = custom(self._database_type)
+        return new
+
+    def __call__(self, size: int) -> "DatabaseType":
         new = self.clone()
         new._database_type = f"{self._database_type}({size})"
         return new
 
-    def initialize(self, table: str, name: str) -> "DatabaseType":
+    def initialize(self, table: str, name: str, default: Any = None) -> "DatabaseType":
         new = self.clone()
         new._primary_key = self._primary_key
+        new._check = self._check
         new._table = table
         new._name = name
+        new._default = default
         return new
 
     def get_db_type(self):
@@ -169,6 +205,12 @@ class DatabaseType(Operator):
             if self._primary_key
             else self._database_type
         )
+
+    def get_default(self):
+        return self._default() if callable(self._default) else self._default
+
+    def has_default(self):
+        return self._default is not None
 
     @property
     def primary_key(self) -> "DatabaseType":

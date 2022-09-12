@@ -1,5 +1,5 @@
-# bladeorm
-A tiny light ORM for PostgreSQL, built for ease of use.
+# BladeORM
+A light & tiny ORM for PostgreSQL, built for ease of use.
 # Installation
 ```bash
 pip3 install bladeorm
@@ -37,6 +37,35 @@ asyncio.run(main())
 
 ```
 # Documentation
+## Types
+### Available types
+| BladeORM        | SQL              | Python        |
+|-----------------|------------------|---------------|
+| Text            | TEXT             | str           |
+| Varchar(length) | VARCHAR(length)  | str           |
+| SmallInt        | SMALLINT         | int           |
+| Int             | INTEGER          | int           |
+| BigInt          | BIGINT           | int           |
+| Float           | DOUBLE PRECISION | float         |
+| Bool            | BOOLEAN          | bool          |
+| SmallSerial     | SMALLSERIAL      | int           |
+| Serial          | SERIAL           | int           |
+| BigSerial       | BIGSERIAL        | int           |
+| Date            | DATE             | datetime.date |
+### Type modifiers
+| BladeORM                               | SQL           | Details                                                                                                         |
+|----------------------------------------|---------------|-----------------------------------------------------------------------------------------------------------------|
+| .primary_key                           | PRIMARY KEY   |                                                                                                                 |
+| .unique                                | UNIQUE        |                                                                                                                 |
+| .not_null                              | NOT NULL      |                                                                                                                 |
+| .default(value)                        | DEFAULT value | NOT SQLI SAFE                                                                                                   |
+| .custom(lambda current_type: new_type) | //            | Directly modify the type                                                                                        |
+| .id                                    | //            | Use as ID without setting primary key                                                                           |
+| .array                                 | TYPE[]        |                                                                                                                 |
+| type[length]                           | TYPE[length]  |                                                                                                                 |
+| = default                              | //            | Ex.: name: Text = "John", set the default value, but it's directly managed by BladeORM.                         |
+| = lambda: default                      | //            | Ex.: name: Text = lambda: "John", set the default value with a callable, but it's directly managed by BladeORM. |
+| .check(lambda value : value > 0)       | //            | Add a check constraint managed by BladeORM.                                                                     |
 ## Querying
 ### Fetch
 ```python3
