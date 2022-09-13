@@ -1,3 +1,4 @@
+from attr import attr
 from .utils import Operator, ValuesManager
 from abc import ABC, abstractmethod
 from typing import Dict, Union, Any, TYPE_CHECKING, List
@@ -5,6 +6,32 @@ from typing import Dict, Union, Any, TYPE_CHECKING, List
 if TYPE_CHECKING:
     from .model import Model
 
+
+class PartialModel:
+
+    def __init__(self, of: "Model", results: Dict[str, Any]) -> None:
+        self._of = of
+        self._data = results
+        self._data_values = list(results.values())
+    
+    def __getattr__(self, attr):
+        if attr not in self._data:
+            raise AttributeError(f"{attr} not found in results")
+        
+        return self._data[attr]
+    
+    def __getitem__(self, item):
+        return self._data_values[item]
+    
+    def __setattr__(self, name: str, value: Any) -> None:
+        if (not name.startswith("_")) and name in self._data:
+            raise AttributeError("Partial models are immutables")
+
+        self.__dict__[name] = value
+
+    def __iter__(self):
+        for value in self._data_values:
+            yield value
 
 class QueryExecutor(ABC):
     @abstractmethod
@@ -59,7 +86,7 @@ class ModelExecutor(QueryExecutor):
             )
 
             rows = await connection.fetch(query, *manager.get_storage())
-            return [self._model.create_instance(dict(row), True) for row in rows]
+            return [PartialModel(self._model, dict(row)) if results_data else self._model.create_instance(dict(row), True) for row in rows]
 
     async def fetchone(self, *results: Union[Operator, Any]) -> "Model":
         async with self._model.get_client().get_connection() as connection:
@@ -77,7 +104,7 @@ class ModelExecutor(QueryExecutor):
             )
 
             row = await connection.fetchrow(query, *manager.get_storage())
-            return self._model.create_instance(dict(row), True) if row else None
+            return PartialModel(self._model, dict(row)) if results_data else self._model.create_instance(dict(row), True) if row else None
 
     async def update(self, **values: Dict[str, Union[Operator, Any]]):
         async with self._model.get_client().get_connection() as connection:

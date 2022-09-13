@@ -28,9 +28,13 @@ async def main():
 
     await User(name="John", last_name="Doe", age=20).save()
 
-    print(await User(User.name == "John").fetchone())
+    user = await User(User.name == "John")
+    user.age += 1
+    await user.save()
 
     await User(User.age > 10).update(age=User.age / 2 * 2.5)
+
+    name, age = await User(User.name == "John").fetchone(User.name, User.age)
 
 
 asyncio.run(main())
