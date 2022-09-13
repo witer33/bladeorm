@@ -30,7 +30,7 @@ async def main():
 
     print(await User(User.name == "John").fetchone())
 
-    print(await User(User.age > 10).update(age=User.age / 2 * 2.5))
+    await User(User.age > 10).update(age=User.age / 2 * 2.5)
 
 
 asyncio.run(main())
