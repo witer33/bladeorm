@@ -72,7 +72,7 @@ class Model(ModelExecutor):
             return self._values[item]
 
     def _update_original_id(self):
-        self._original_id = self._values[self._id.get_name()]
+        self._original_id = self._values.get(self._id.get_name())
 
     def _id_check(self):
         if not self._id:
@@ -109,6 +109,14 @@ class Model(ModelExecutor):
         ).delete()
         self._saved = False
         return result
+    
+    async def updated(self):
+        if not self._saved:
+            raise ValueError(f"{self.__class__.__name__} not inserted")
+        
+        self._id_check()
+
+        return await self._original_object.filter(self._id == self._original_id)
 
     async def save(self):
         if not self._saved:
