@@ -1,7 +1,7 @@
 from .utils import DatabaseType
 from .query import ModelExecutor
 from typing import Dict, Any, Union, TYPE_CHECKING, List
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, fields, MISSING
 from typing import Callable
 import json
 import datetime
@@ -180,7 +180,8 @@ def wrap_model(client: "Client") -> Callable[[Any], Model]:
         for field in fields(dataclass(model_class)):
             if isinstance(field.type, DatabaseType):
                 field.type = field.type.initialize(
-                    table_name, field.name, field.default
+                    table_name, field.name,
+                    None if field.default == MISSING else field.default
                 )
                 columns[field.name] = field.type
 
